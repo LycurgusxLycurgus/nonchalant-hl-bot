@@ -1,0 +1,18 @@
+{% for s in snapshots %}
+<tr id="run-{{ s.run_id }}">
+  <td><code title="{{ s.run_id }}">{{ s.run_id[:6] }}…{{ s.run_id[-4:] }}</code></td>
+  <td>{{ s.market }}</td>
+  <td>{{ s.status }}</td>
+  <td class="cell-num">{{ s.position_notional }}</td>
+  <td class="cell-num">{{ s.entry_price }}</td>
+  <td class="cell-num">{{ s.mark_price }}</td>
+  <td class="cell-num">{{ s.unrealized_pnl }}</td>
+  <td class="cell-num">{{ s.realized_pnl }}</td>
+  <td class="cell-num"><strong>{{ s.total_pnl }}</strong></td>
+  <td>{{ s.timestamp }}</td>
+</tr>
+{% else %}
+<tr>
+  <td colspan="10" class="cell-empty">No runs yet. Start a bot to see live updates.</td>
+</tr>
+{% endfor %}

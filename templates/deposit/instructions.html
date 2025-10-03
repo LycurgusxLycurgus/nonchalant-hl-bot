@@ -1,0 +1,83 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Deposit funds — Hyperliquid Bot{% endblock %}
+
+{% block content %}
+  <section class="deposit-hero ui-card ui-card--surface">
+    <div class="deposit-hero__body">
+      <span class="deposit-hero__eyebrow">Phase 3 · Fund your account</span>
+      <h1 class="deposit-hero__title">Bridge assets into Hyperliquid</h1>
+      <p class="deposit-hero__copy">
+        Deposits are signed by your main wallet on Layer 1. Once confirmed, balances appear on Hyperliquid
+        and the bot can trade using your authorized agent wallet. Follow the guided steps below to bridge funds safely.
+      </p>
+      <div class="deposit-hero__ctas">
+        <a class="ui-button ui-button--primary" href="https://app.hyperliquid.xyz/bridge" target="_blank" rel="noopener">
+          Open Hyperliquid Bridge
+        </a>
+        <a class="ui-button ui-button--secondary" href="https://hyperliquid.gitbook.io/hyperliquid-docs" target="_blank" rel="noopener">
+          Read deposit docs
+        </a>
+      </div>
+    </div>
+    <div class="deposit-hero__visual" aria-hidden="true">
+      <div class="deposit-glow"></div>
+      <div class="deposit-glow deposit-glow--secondary"></div>
+    </div>
+  </section>
+
+  <section class="deposit-layout">
+    <article class="ui-card ui-card--surface deposit-steps" aria-labelledby="deposit-steps-heading">
+      <header class="ui-card__header">
+        <span class="ui-card__kicker">Checklist</span>
+        <h2 id="deposit-steps-heading" class="ui-card__title">Bridge flow</h2>
+      </header>
+      <ol class="deposit-steps__list">
+        <li>
+          <strong>Prepare wallet</strong> — Connect your L1 wallet (MetaMask, WalletConnect) using the top toolbar. Ensure you have USDC on Arbitrum.
+        </li>
+        <li>
+          <strong>Initiate deposit</strong> — Visit the Hyperliquid Bridge, choose <em>Arbitrum → Hyperliquid</em>, specify the amount, and submit the transaction.
+        </li>
+        <li>
+          <strong>Wait for confirmation</strong> — Bridge finalization typically takes a couple of minutes. Keep the window open until you see a success status.
+        </li>
+        <li>
+          <strong>Refresh balance</strong> — Return here and refresh the balance panel. Your USDC credit should appear once the bridge settles.
+        </li>
+      </ol>
+      <div class="deposit-alert">
+        <span class="deposit-alert__icon" aria-hidden="true">⚠️</span>
+        <p class="deposit-alert__copy">
+          Reminder: Agent wallets can trade and perform internal transfers but cannot withdraw on-chain. All L1 withdrawals
+          must be initiated by your primary wallet.
+        </p>
+      </div>
+    </article>
+
+    <aside class="deposit-balance ui-card" aria-live="polite" aria-busy="false">
+      <header class="deposit-balance__header">
+        <div>
+          <span class="ui-card__kicker">Hyperliquid balance</span>
+          <h2 class="ui-card__title">USDC holdings</h2>
+        </div>
+        <button
+          class="ui-button ui-button--secondary"
+          hx-get="/deposit/partial/balance"
+          hx-target="#balance-panel"
+          hx-trigger="click"
+          hx-indicator="#balance-loading"
+        >
+          Refresh
+        </button>
+      </header>
+      <div id="balance-panel" hx-get="/deposit/partial/balance" hx-trigger="load, every 10s" hx-indicator="#balance-loading">
+        {% include "deposit/_balance_panel.html" %}
+      </div>
+      <div id="balance-loading" class="deposit-loading" aria-hidden="true">Updating…</div>
+      <footer class="deposit-balance__footer">
+        <p>Polling Hyperliquid Info endpoint every 10 seconds. Balances show the latest confirmed bridge credit in USDC.</p>
+      </footer>
+    </aside>
+  </section>
+{% endblock %}

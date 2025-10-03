@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" data-app-shell>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ page_title or "Hyperliquid Bot" }}</title>
+    <link rel="preload" href="https://rsms.me/inter/inter.css" as="style" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link rel="stylesheet" href="{{ url_for('static', path='css/tokens.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', path='css/base.css') }}" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="app-shell__header" role="banner">
+        <div class="app-shell__brand">
+          <span class="brand-logo" aria-hidden="true">⚡</span>
+          <span class="brand-text">Hyperliquid Bot</span>
+        </div>
+        <div class="app-shell__tools">
+          <nav class="app-shell__nav" aria-label="Primary">
+            <a class="ui-link" href="#overview">Overview</a>
+            <a class="ui-link" href="#roadmap">Roadmap</a>
+            <a class="ui-link" href="#stack">Stack</a>
+          </nav>
+          <div class="wallet-panel" data-wallet-state>
+            <div class="wallet-panel__status">
+              <span class="wallet-panel__label">Wallet</span>
+              <span
+                class="wallet-panel__address"
+                data-wallet-address
+                data-state="{{ 'connected' if wallet_address else 'disconnected' }}"
+              >
+                {{ wallet_address_short or 'Not connected' }}
+              </span>
+            </div>
+            <div data-wallet-connect>
+              <button
+                type="button"
+                class="ui-button {{ 'ui-button--secondary' if wallet_address else 'ui-button--primary' }}"
+                data-project-id="{{ walletconnect_project_id or '' }}"
+                {% if wallet_address %}data-connected-address="{{ wallet_address }}"{% endif %}
+              >
+                {{ 'Disconnect' if wallet_address else 'Connect wallet' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main id="overview" class="app-shell__main" role="main">
+        <section class="hero-card" tabindex="0">
+          <div class="hero-card__eyebrow">Phase 0 / Skeleton</div>
+          <h1 class="hero-card__title">Hyperliquid trading agent platform</h1>
+          <p class="hero-card__body">
+            Elegant, production-grade foundation for launching wallet-signed Hyperliquid
+            trading bots. This skeleton ships the FastAPI service, design tokens, and base layout
+            that power the upcoming phases.
+          </p>
+          <div class="hero-card__meta">
+            <div class="hero-card__meta-item">
+              <span class="label">Status</span>
+              <span class="value value--success">Healthy</span>
+            </div>
+            <div class="hero-card__meta-item">
+              <span class="label">Runtime</span>
+              <span class="value">FastAPI · Python 3.11</span>
+            </div>
+            <div class="hero-card__meta-item">
+              <span class="label">UI Tokens</span>
+              <span class="value">Dark · Warm accent</span>
+            </div>
+          </div>
+        </section>
+
+        <section id="roadmap" class="info-grid" aria-labelledby="roadmap-heading">
+          <h2 id="roadmap-heading" class="section-title">Phase roadmap</h2>
+          <div class="info-grid__items">
+            <article class="ui-card">
+              <header class="ui-card__header">
+                <span class="ui-card__kicker">P1</span>
+                <h3 class="ui-card__title">Wallet connect</h3>
+              </header>
+              <p class="ui-card__body">
+                Connect user wallets with Web3Modal + ethers v6, setting up signature flows.
+              </p>
+            </article>
+            <article class="ui-card">
+              <header class="ui-card__header">
+                <span class="ui-card__kicker">P4</span>
+                <h3 class="ui-card__title">Start bot</h3>
+              </header>
+              <p class="ui-card__body">
+                Configure markets, sign leverage changes, and execute opening orders.
+              </p>
+            </article>
+            <article class="ui-card">
+              <header class="ui-card__header">
+                <span class="ui-card__kicker">P8</span>
+                <h3 class="ui-card__title">Withdraw</h3>
+              </header>
+              <p class="ui-card__body">
+                Prepare bridge signatures with typed data and user-owned keys.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section id="stack" class="info-grid" aria-labelledby="stack-heading">
+          <h2 id="stack-heading" class="section-title">Tech stack</h2>
+          <div class="info-grid__items info-grid__items--compact">
+            <article class="ui-card ui-card--surface">
+              <header class="ui-card__header">
+                <h3 class="ui-card__title">Backend</h3>
+              </header>
+              <ul class="ui-list">
+                <li>FastAPI 0.115+</li>
+                <li>Pydantic v2</li>
+                <li>SQLAlchemy 2.0</li>
+              </ul>
+            </article>
+            <article class="ui-card ui-card--surface">
+              <header class="ui-card__header">
+                <h3 class="ui-card__title">Frontend</h3>
+              </header>
+              <ul class="ui-list">
+                <li>Jinja2 3.1</li>
+                <li>htmx 2.x</li>
+                <li>Vanilla CSS + tokens</li>
+              </ul>
+            </article>
+            <article class="ui-card ui-card--surface">
+              <header class="ui-card__header">
+                <h3 class="ui-card__title">Protocols</h3>
+              </header>
+              <ul class="ui-list">
+                <li>Hyperliquid REST/WS</li>
+                <li>Bridge2 withdrawals</li>
+                <li>WalletConnect</li>
+              </ul>
+            </article>
+          </div>
+        </section>
+      </main>
+
+      <footer class="app-shell__footer" role="contentinfo">
+        <span>© {{ current_year }} Hyperliquid Bot · Testnet first</span>
+      </footer>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.12.0/dist/ethers.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3modal@3.5.5/dist/index.umd.js" defer></script>
+    <script src="{{ url_for('static', path='js/wallet-connect.js') }}" defer></script>
+  </body>
+</html>

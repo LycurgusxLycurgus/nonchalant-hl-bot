@@ -1,0 +1,19 @@
+{% set has_balance = balance_value is not none %}
+<div class="balance-panel {{ 'balance-panel--error' if error_message }}">
+  {% if wallet_address %}
+    <p class="balance-panel__wallet">Connected wallet: <strong>{{ wallet_address }}</strong></p>
+  {% else %}
+    <p class="balance-panel__wallet">No wallet connected.</p>
+  {% endif %}
+
+  {% if error_message %}
+    <div class="balance-panel__message balance-panel__message--error">{{ error_message }}</div>
+  {% elif has_balance %}
+    <div class="balance-panel__value">
+      <span class="balance-panel__amount">{{ balance_display or '0.00' }}<span class="balance-panel__currency"> USDC</span></span>
+      <p class="balance-panel__hint">Latest confirmed Hyperliquid balance. Updated automatically every 10 seconds.</p>
+    </div>
+  {% else %}
+    <div class="balance-panel__message">Waiting for bridge confirmation…</div>
+  {% endif %}
+</div>

@@ -1,0 +1,50 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Realtime Monitor · Hyperliquid Bot{% endblock %}
+
+{% block head_assets %}
+<style>
+  .monitor-table { width: 100%; border-collapse: collapse; }
+  .monitor-table th, .monitor-table td { padding: 8px 10px; border-bottom: 1px solid var(--ui-border-weak); }
+  .monitor-table thead th { text-align: left; font-weight: 600; color: var(--text-muted); }
+  .monitor-table .cell-num { text-align: right; font-variant-numeric: tabular-nums; }
+  .monitor-table .cell-empty { text-align: center; color: var(--text-muted); padding: 16px; }
+  .monitor-hero { margin-bottom: 16px; }
+  .monitor-hero h1 { margin: 0; font-size: 18px; }
+  .monitor-hero p { margin: 6px 0 0; color: var(--text-muted); }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="monitor-hero">
+  <h1>Realtime Monitor</h1>
+  <p>Live PnL updates via SSE. Start a bot run to populate this table.</p>
+</section>
+
+<section class="monitor-table-wrap">
+  <table class="monitor-table" aria-label="Realtime bot runs">
+    <thead>
+      <tr>
+        <th scope="col">Run</th>
+        <th scope="col">Market</th>
+        <th scope="col">Status</th>
+        <th scope="col" class="cell-num">Position</th>
+        <th scope="col" class="cell-num">Entry</th>
+        <th scope="col" class="cell-num">Mark</th>
+        <th scope="col" class="cell-num">Unrealized</th>
+        <th scope="col" class="cell-num">Realized</th>
+        <th scope="col" class="cell-num">Total PnL</th>
+        <th scope="col">Updated</th>
+      </tr>
+    </thead>
+    <tbody id="monitor-rows">
+      {# server-render initial rows #}
+      {% include "monitoring/_rows.html" %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}
+
+{% block body_assets %}
+<script src="{{ url_for('static', path='js/monitoring.js') }}" defer></script>
+{% endblock %}

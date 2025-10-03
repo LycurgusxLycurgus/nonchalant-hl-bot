@@ -1,0 +1,183 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}History & Audit Trail · Hyperliquid Bot{% endblock %}
+
+{% block head_assets %}
+<style>
+  .history-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .history-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .history-table thead {
+    background: rgba(255, 255, 255, 0.05);
+  }
+  .history-table th,
+  .history-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    text-align: left;
+  }
+  .history-table td.cell-action {
+    font-weight: 600;
+  }
+  .history-table td.cell-run {
+    font-family: var(--font-mono, monospace);
+    font-size: 13px;
+  }
+  .history-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 16px;
+  }
+  .history-pagination__buttons {
+    display: flex;
+    gap: 8px;
+  }
+  .history-run-filter {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .history-run-filter input[type="text"] {
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.05);
+    color: inherit;
+    padding: 8px 10px;
+  }
+  .history-run-filter button {
+    padding: 8px 12px;
+  }
+  .history-empty {
+    padding: 20px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+  }
+  @media (max-width: 768px) {
+    .history-table thead {
+      display: none;
+    }
+    .history-table tr {
+      display: grid;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 12px 8px;
+    }
+    .history-table td {
+      border: none;
+      padding: 6px 0;
+    }
+    .history-table td::before {
+      content: attr(data-label);
+      display: block;
+      font-size: 12px;
+      opacity: 0.65;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="history-hero">
+  <div>
+    <h1>History & Audit Trail</h1>
+    <p class="text-muted">Review every signed action and event emitted by the bot runtime.</p>
+  </div>
+  <form class="history-run-filter" method="get">
+    <label for="run-filter" class="sr-only">Filter by run ID</label>
+    <input
+      type="text"
+      id="run-filter"
+      name="run_id"
+      value="{{ run_id or '' }}"
+      placeholder="Filter by run ID"
+    />
+    <button type="submit" class="ui-button ui-button--secondary">Apply</button>
+    {% if run_id %}
+    <a class="ui-link" href="/history/">Clear</a>
+    {% endif %}
+  </form>
+</section>
+
+<section class="history-table-wrap">
+  {% if history %}
+  <table class="history-table" aria-label="Audit trail entries">
+    <thead>
+      <tr>
+        <th scope="col">Action</th>
+        <th scope="col">Run</th>
+        <th scope="col">Status</th>
+        <th scope="col">Timestamp</th>
+        <th scope="col">Details</th>
+        <th scope="col">Explorer</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in history %}
+      <tr>
+        <td data-label="Action" class="cell-action">{{ item.action }}</td>
+        <td data-label="Run" class="cell-run">
+          {% if item.run_id %}
+          <code title="{{ item.run_id }}">{{ item.run_id[:6] }}…{{ item.run_id[-4:] }}</code>
+          {% else %}
+          <span class="text-muted">—</span>
+          {% endif %}
+        </td>
+        <td data-label="Status">{{ item.run_status or '—' }}</td>
+        <td data-label="Timestamp">{{ item.occurred_at.strftime('%Y-%m-%d %H:%M:%S UTC') }}</td>
+        <td data-label="Details">
+          <details>
+            <summary>View payload</summary>
+            <pre><code>{{ item.payload | tojson(indent=2) }}</code></pre>
+          </details>
+        </td>
+        <td data-label="Explorer">
+          {% if item.explorer_url %}
+          <a class="ui-link" href="{{ item.explorer_url }}" target="_blank" rel="noopener">Open</a>
+          {% else %}
+          <span class="text-muted">—</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="history-empty">No history entries yet.</div>
+  {% endif %}
+</section>
+
+{% if total > limit %}
+<section class="history-pagination">
+  <div class="history-pagination__meta">
+    Showing {{ offset + 1 }}‑{{ [offset + limit, total]|min }} of {{ total }}
+  </div>
+  <div class="history-pagination__buttons">
+    {% set prev_offset = max(offset - limit, 0) %}
+    {% set next_offset = offset + limit %}
+    <a
+      class="ui-button ui-button--secondary"
+      href="{{ url_for('history.history_page') }}?offset={{ prev_offset }}{% if run_id %}&run_id={{ run_id }}{% endif %}"
+      aria-disabled="{{ 'true' if offset == 0 else 'false' }}"
+    >Previous</a>
+    {% if next_offset < total %}
+    <a
+      class="ui-button ui-button--secondary"
+      href="{{ url_for('history.history_page') }}?offset={{ next_offset }}{% if run_id %}&run_id={{ run_id }}{% endif %}"
+    >Next</a>
+    {% else %}
+    <span class="ui-button ui-button--secondary" aria-disabled="true">Next</span>
+    {% endif %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

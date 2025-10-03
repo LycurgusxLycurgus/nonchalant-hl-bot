@@ -1,0 +1,10 @@
+<div class="agent-status agent-status--{{ status }}" role="status" aria-live="polite">
+  <div class="agent-status__icon" aria-hidden="true">
+    {% if status == "success" %}
+      ✅
+    {% else %}
+      ⚠️
+    {% endif %}
+  </div>
+  <div class="agent-status__message">{{ message }}</div>
+</div>

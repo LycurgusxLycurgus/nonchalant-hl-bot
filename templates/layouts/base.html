@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" data-app-shell>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}{{ page_title or "Hyperliquid Bot" }}{% endblock %}</title>
+    <link rel="preload" href="https://rsms.me/inter/inter.css" as="style" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link rel="stylesheet" href="{{ url_for('static', path='css/tokens.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', path='css/base.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', path='css/components.css') }}" />
+    {% block head_assets %}{% endblock %}
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="app-shell__header" role="banner">
+        <div class="app-shell__brand">
+          <span class="brand-logo" aria-hidden="true">⚡</span>
+          <span class="brand-text">Hyperliquid Bot</span>
+        </div>
+        <div class="app-shell__tools">
+          <nav class="app-shell__nav" aria-label="Primary">
+            <a class="ui-link{% if nav_active == 'overview' %} is-active{% endif %}" href="/">Overview</a>
+            <a class="ui-link{% if nav_active == 'deposit' %} is-active{% endif %}" href="/deposit">Deposit</a>
+            <a class="ui-link{% if nav_active == 'agent' %} is-active{% endif %}" href="/authz/agent">Agent auth</a>
+            <a class="ui-link{% if nav_active == 'monitoring' %} is-active{% endif %}" href="/monitoring/">Monitor</a>
+            <a class="ui-link{% if nav_active == 'history' %} is-active{% endif %}" href="/history/">History</a>
+            <a class="ui-link" href="/#stack">Stack</a>
+          </nav>
+          <div class="wallet-panel" data-wallet-state>
+            <div class="wallet-panel__status">
+              <span class="wallet-panel__label">Wallet</span>
+              <span
+                class="wallet-panel__address"
+                data-wallet-address
+                data-state="{{ 'connected' if wallet_address else 'disconnected' }}"
+              >
+                {{ wallet_address_short or 'Not connected' }}
+              </span>
+            </div>
+            <div data-wallet-connect>
+              <button
+                type="button"
+                class="ui-button {{ 'ui-button--secondary' if wallet_address else 'ui-button--primary' }}"
+                data-project-id="{{ walletconnect_project_id or '' }}"
+                {% if wallet_address %}data-connected-address="{{ wallet_address }}"{% endif %}
+              >
+                {{ 'Disconnect' if wallet_address else 'Connect wallet' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="app-shell__main" role="main">
+        {% block content %}{% endblock %}
+      </main>
+
+      <footer class="app-shell__footer" role="contentinfo">
+        <span>© {{ current_year }} Hyperliquid Bot · Testnet first</span>
+      </footer>
+    </div>
+    <script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.15.0/ethers.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3modal@3.5.5/dist/index.umd.js" defer></script>
+    <script src="{{ url_for('static', path='js/wallet-connect.js') }}" defer></script>
+    {% block body_assets %}{% endblock %}
+  </body>
+</html>
