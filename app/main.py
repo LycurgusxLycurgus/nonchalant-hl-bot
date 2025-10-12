@@ -5,7 +5,7 @@ from typing import Any
 
 from fastapi import FastAPI
 from fastapi.requests import Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
@@ -15,6 +15,14 @@ from app.authz.routes import router as authz_router
 from app.config import get_settings
 from app.deposit.routes import router as deposit_router
 from app.trading.routes import router as trading_router
+from app.trading.service import get_start_overview
+from app.trading.ui import router as trading_ui_router
+from app.trading.constants import (
+    DEFAULT_MARKETS,
+    DEFAULT_DURATION_MINUTES,
+    DEFAULT_LEVERAGE,
+    DEFAULT_NOTIONAL,
+)
 from app.monitoring import MonitoringHub, router as monitoring_router, MonitoringService
 from app.transfers.routes import router as transfers_router
 from app.withdraw.routes import router as withdraw_router
@@ -47,6 +55,7 @@ app.state.rate_limit_per_minute = settings.request_rate_limit_per_minute
 app.include_router(authz_router, prefix="/authz", tags=["authz"])
 app.include_router(deposit_router, prefix="/deposit", tags=["deposit"])
 app.include_router(trading_router, prefix="/api/bot", tags=["bot"])
+app.include_router(trading_ui_router, prefix="/bot", tags=["bot-ui"])
 app.include_router(monitoring_router, prefix="/monitoring", tags=["monitoring"])
 app.include_router(transfers_router, prefix="/api/internal", tags=["internal"])
 app.include_router(withdraw_router, prefix="/api/withdraw", tags=["withdraw"])
@@ -66,6 +75,23 @@ async def metrics_endpoint() -> JSONResponse:
     return JSONResponse({"ok": True, "data": snapshot})
 
 
+@app.get(
+    "/.well-known/appspecific/com.chrome.devtools.json",
+    include_in_schema=False,
+)
+async def chrome_devtools_probe() -> Response:
+    """Return empty response for Chrome DevTools probe to avoid noisy 404 logs."""
+
+    return Response(status_code=204)
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon() -> FileResponse:
+    """Serve the Hyperliquid Bot favicon."""
+
+    return FileResponse(STATIC_DIR / "favicon.svg", media_type="image/svg+xml")
+
+
 def _wallet_context(session: dict[str, Any]) -> dict[str, Any]:
     """Assemble wallet-related context for templates."""
 
@@ -83,12 +109,29 @@ app.state.wallet_context_builder = _wallet_context
 async def root(request: Request):
     """Render landing page including wallet connect state."""
 
+    start_overview = get_start_overview()
+    form_defaults = {
+        "market": DEFAULT_MARKETS[0],
+        "usd_notional": str(DEFAULT_NOTIONAL),
+        "leverage": str(DEFAULT_LEVERAGE),
+        "duration_minutes": str(DEFAULT_DURATION_MINUTES),
+    }
+
     context = {
+        "request": request,
         "page_title": "Hyperliquid Bot",
         "current_year": datetime.now(tz=UTC).year,
         "walletconnect_project_id": settings.walletconnect_project_id,
         "hl_env": settings.hl_env,
         "nav_active": "overview",
+        "markets": DEFAULT_MARKETS,
+        "default_notional": DEFAULT_NOTIONAL,
+        "default_leverage": DEFAULT_LEVERAGE,
+        "default_duration_minutes": DEFAULT_DURATION_MINUTES,
+        "start_overview": start_overview,
+        "form_values": form_defaults,
+        "form_errors": {},
+        "form_success": None,
         **_wallet_context(request.session),
     }
     return templates.TemplateResponse(request, "index.html", context)

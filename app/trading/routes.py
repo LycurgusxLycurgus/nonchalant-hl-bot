@@ -25,8 +25,14 @@ async def start_bot_endpoint(
 
     enforce_rate_limit(request, "bot.start")
     wallet_address: str | None = request.session.get("wallet_address")
-    record = await start_bot_run(payload, wallet_address or "", background_tasks)
-    # Publish initial monitoring snapshot for this run
+    active_agent_address: str | None = request.session.get("active_agent_address")
+    record = await start_bot_run(
+        payload,
+        wallet_address or "",
+        background_tasks,
+        monitoring,
+        active_agent_address=active_agent_address,
+    )
     await monitoring.register_run(record)
     response_payload = BotStartResponse.from_record(record).model_dump(mode="json")
     return JSONResponse({"ok": True, "data": response_payload})

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Dict
 
 import httpx
 
@@ -24,17 +24,43 @@ class InfoClient:
         self.timeout = timeout
 
     async def fetch_balances(self, address: str) -> dict[str, Any]:
-        """Fetch user balances for the provided Hyperliquid address."""
+        """Fetch user balances for the provided Hyperliquid address.
 
-        payload = {
-            "type": "spotClearinghouseState",
+        Returns spot clearinghouse state enriched with perp clearinghouse data when available.
+        """
+
+        spot_payload = {"type": "spotClearinghouseState", "user": address}
+        spot_data = await self._post_info(address, spot_payload, "spot")
+
+        clearinghouse_payload: Dict[str, Any] = {
+            "type": "clearinghouseState",
             "user": address,
         }
 
+        result: dict[str, Any] = dict(spot_data)
+
+        try:
+            clearinghouse_data = await self._post_info(address, clearinghouse_payload, "perp")
+        except InfoClientError as exc:
+            logger.info(
+                "hyperliquid.info.request.skip",
+                extra={
+                    "address": address,
+                    "scope": "perp",
+                    "reason": str(exc),
+                },
+            )
+        else:
+            result["clearinghouseState"] = clearinghouse_data
+        return result
+
+    async def _post_info(self, address: str, payload: dict[str, Any], scope: str) -> dict[str, Any]:
+        """Perform POST /info with payload and return JSON dict."""
+
         try:
             logger.info(
-                "hyperliquid.info.fetch_balances.start",
-                extra={"address": address, "base_url": self.base_url},
+                "hyperliquid.info.request",
+                extra={"address": address, "base_url": self.base_url, "scope": scope},
             )
             async with httpx.AsyncClient(base_url=self.base_url, timeout=self.timeout) as client:
                 response = await client.post("/info", json=payload)
@@ -47,21 +73,21 @@ class InfoClient:
             except ValueError:  # response not json
                 detail = exc.response.text
             detail_display = detail[:200] if isinstance(detail, str) else str(detail)
-            message = f"Hyperliquid Info request failed ({status}): {detail_display}"
             logger.warning(
-                "hyperliquid.info.fetch_balances.http_error",
+                "hyperliquid.info.request.http_error",
                 extra={
                     "address": address,
                     "base_url": self.base_url,
                     "status": status,
                     "detail": detail_display,
+                    "scope": scope,
                 },
             )
-            raise InfoClientError(message) from exc
+            raise InfoClientError(f"Hyperliquid Info request failed ({status}): {detail_display}") from exc
         except httpx.HTTPError as exc:  # pragma: no cover
             logger.warning(
-                "hyperliquid.info.fetch_balances.network_error",
-                extra={"address": address, "base_url": self.base_url},
+                "hyperliquid.info.request.network_error",
+                extra={"address": address, "base_url": self.base_url, "scope": scope},
             )
             raise InfoClientError("Hyperliquid Info request failed (network)") from exc
 
@@ -72,5 +98,14 @@ class InfoClient:
 
         if not isinstance(data, dict):
             raise InfoClientError("Unexpected Info response shape")
+
+        logger.info(
+            "hyperliquid.info.request.summary",
+            extra={
+                "address": address,
+                "scope": scope,
+                "keys": sorted(data.keys()),
+            },
+        )
 
         return data

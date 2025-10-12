@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">Hyperliquid Bot</title>
+  <desc id="desc">Stylized lightning bolt inside a warm orange gradient circle.</desc>
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#FFB366" />
+      <stop offset="55%" stop-color="#FF8A2D" />
+      <stop offset="100%" stop-color="#D45A00" />
+    </radialGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.35)" />
+    </filter>
+  </defs>
+  <circle cx="32" cy="32" r="28" fill="url(#glow)" filter="url(#shadow)" />
+  <path
+    d="M30.4 13.5c.6-.9 1.9-.7 2.2.3l3.6 10.9h10.4c1.1 0 1.6 1.3.8 2.1L33.6 49.7c-.7.7-1.9.4-2.1-.6l-2.4-11.2h-8.9c-1.1 0-1.7-1.3-.9-2.1z"
+    fill="#0F111A"
+  />
+  <path
+    d="M30.4 13.5c.6-.9 1.9-.7 2.2.3l3.6 10.9h7.1c1.1 0 1.6 1.3.8 2.1L33.6 49.7c-.7.7-1.9.4-2.1-.6l-2.4-11.2h-5.6c-1.1 0-1.7-1.3-.9-2.1z"
+    fill="#FFE7D1"
+  />
+</svg>

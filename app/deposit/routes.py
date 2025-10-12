@@ -27,18 +27,53 @@ def get_templates(request: Request) -> Jinja2Templates:
 
 
 def _extract_usd_balance(payload: dict[str, Any]) -> Decimal:
-    """Extract USDC balance from spot clearinghouse state response."""
+    """Extract USDC collateral from spot + perp clearinghouse state."""
 
+    def _to_decimal(value: Any) -> Decimal | None:
+        if value is None:
+            return None
+        try:
+            return Decimal(str(value))
+        except (ValueError, ArithmeticError, InvalidOperation):
+            return None
+
+    # Spot balances (wallet-style holdings)
     spot_state = payload.get("spotState") or {}
     balances = spot_state.get("balances") or []
     for balance in balances:
         coin = balance.get("coin")
         if isinstance(coin, str) and coin.upper() in {"USDC", "USD"}:
-            value = balance.get("total") or balance.get("available") or balance.get("amount") or 0
-            try:
-                return Decimal(str(value))
-            except (ValueError, ArithmeticError, InvalidOperation):
-                return Decimal("0")
+            value = balance.get("total") or balance.get("available") or balance.get("amount")
+            dec_value = _to_decimal(value)
+            if dec_value is not None:
+                return dec_value
+
+    # Perpetual clearinghouse (cross margin collateral)
+    clearinghouse = payload.get("clearinghouseState") or {}
+    summary = clearinghouse.get("crossMarginSummary") or {}
+    for key in ("equity", "accountValue", "balance", "total"):
+        dec_value = _to_decimal(summary.get(key))
+        if dec_value is not None:
+            return dec_value
+
+    # Aggregate margin summary as secondary signal
+    margin_summary = clearinghouse.get("marginSummary") or {}
+    for key in ("accountValue", "equity", "balance", "total"):
+        dec_value = _to_decimal(margin_summary.get(key))
+        if dec_value is not None:
+            return dec_value
+
+    withdrawable = _to_decimal(clearinghouse.get("withdrawable"))
+    if withdrawable is not None:
+        return withdrawable
+
+    # Isolated margin positions fallback
+    account = clearinghouse.get("accountValue") or {}
+    if account:
+        dec_value = _to_decimal(account.get("total") or account.get("usd"))
+        if dec_value is not None:
+            return dec_value
+
     return Decimal("0")
 
 

@@ -1,0 +1,67 @@
+{% set total = agents|length %}
+<section
+  class="agent-vault ui-card ui-card--surface"
+  aria-labelledby="agent-vault-heading"
+>
+  <header class="agent-vault__header">
+    <div>
+      <span class="agent-vault__eyebrow">Stored agents</span>
+      <h2 id="agent-vault-heading" class="agent-vault__title">Agent vault</h2>
+    </div>
+    <div class="agent-vault__meta">
+      <span class="agent-vault__count" aria-live="polite">{{ total }} wallet{{ 's' if total != 1 else '' }}</span>
+      {% if wallet_address %}
+        <span class="agent-vault__wallet" title="Connected wallet">Wallet · {{ wallet_address[:6] }}…{{ wallet_address[-4:] }}</span>
+      {% endif %}
+    </div>
+  </header>
+
+  {% if agents %}
+    <ul class="agent-vault__list" role="list">
+      {% for agent in agents %}
+        <li class="agent-vault__item{% if agent.is_active %} is-active{% endif %}" aria-label="Agent {{ agent.label }}">
+          <div class="agent-vault__content">
+            <div class="agent-vault__label-row">
+              <span class="agent-vault__label">{{ agent.label }}</span>
+              {% if agent.is_active %}
+                <span class="agent-vault__badge" role="status">Active agent</span>
+              {% endif %}
+            </div>
+            <div class="agent-vault__address" title="{{ agent.agent_address }}">{{ agent.agent_short }}</div>
+            <div class="agent-vault__timestamp">Stored {{ agent.stored_display }}</div>
+          </div>
+          <div class="agent-vault__controls">
+            {% if not agent.is_active %}
+              <form
+                class="agent-vault__form"
+                hx-post="/authz/agent/select"
+                hx-target="#agent-vault"
+                hx-swap="innerHTML"
+                hx-headers='{"X-Requested-With": "HTMX"}'
+              >
+                <input type="hidden" name="agent_address" value="{{ agent.agent_address }}" />
+                <button class="ui-button ui-button--ghost" type="submit">Set active</button>
+              </form>
+            {% endif %}
+            <form
+              class="agent-vault__form"
+              hx-post="/authz/agent/delete"
+              hx-target="#agent-vault"
+              hx-swap="innerHTML"
+              hx-headers='{"X-Requested-With": "HTMX"}'
+              hx-confirm="Delete agent {{ agent.agent_short }}? This cannot be undone."
+            >
+              <input type="hidden" name="agent_address" value="{{ agent.agent_address }}" />
+              <button class="ui-button ui-button--danger" type="submit">Delete</button>
+            </form>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="agent-vault__empty" role="status">
+      <strong>No agents stored yet.</strong>
+      <p>Add an agent wallet above to populate this vault.</p>
+    </div>
+  {% endif %}
+</section>

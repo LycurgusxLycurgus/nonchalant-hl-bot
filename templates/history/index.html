@@ -162,17 +162,17 @@
     Showing {{ offset + 1 }}‑{{ [offset + limit, total]|min }} of {{ total }}
   </div>
   <div class="history-pagination__buttons">
-    {% set prev_offset = max(offset - limit, 0) %}
+    {% set prev_offset = [offset - limit, 0]|max %}
     {% set next_offset = offset + limit %}
     <a
       class="ui-button ui-button--secondary"
-      href="{{ url_for('history.history_page') }}?offset={{ prev_offset }}{% if run_id %}&run_id={{ run_id }}{% endif %}"
+      href="{{ url_for('history_page') }}?offset={{ prev_offset }}{% if run_id %}&run_id={{ run_id }}{% endif %}"
       aria-disabled="{{ 'true' if offset == 0 else 'false' }}"
     >Previous</a>
     {% if next_offset < total %}
     <a
       class="ui-button ui-button--secondary"
-      href="{{ url_for('history.history_page') }}?offset={{ next_offset }}{% if run_id %}&run_id={{ run_id }}{% endif %}"
+      href="{{ url_for('history_page') }}?offset={{ next_offset }}{% if run_id %}&run_id={{ run_id }}{% endif %}"
     >Next</a>
     {% else %}
     <span class="ui-button ui-button--secondary" aria-disabled="true">Next</span>

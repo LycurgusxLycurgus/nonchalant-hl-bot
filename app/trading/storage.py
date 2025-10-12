@@ -8,13 +8,13 @@ from typing import Any
 
 from app.authz import storage as auth_storage
 
-_RUNS_FILENAME = "bot_runs.json"
+_RUN_STORAGE_PATH = auth_storage.storage_dir() / "runs.json"
 
 
 def _runs_path() -> Path:
     directory = auth_storage.storage_dir()
     directory.mkdir(parents=True, exist_ok=True)
-    return directory / _RUNS_FILENAME
+    return _RUN_STORAGE_PATH
 
 
 def load_runs() -> list[dict[str, Any]]:
@@ -24,7 +24,7 @@ def load_runs() -> list[dict[str, Any]]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def write_runs(entries: list[dict[str, Any]]) -> None:
+def _write_runs(entries: list[dict[str, Any]]) -> None:
     path = _runs_path()
     path.write_text(json.dumps(entries, indent=2), encoding="utf-8")
 
@@ -39,9 +39,9 @@ def get_run(run_id: str) -> dict[str, Any] | None:
 
 
 def append_run(entry: dict[str, Any]) -> None:
-    entries = load_runs()
-    entries.append(entry)
-    write_runs(entries)
+    runs = load_runs()
+    runs.append(entry)
+    _write_runs(runs)
 
 
 def update_run(run_id: str, updates: dict[str, Any]) -> None:
@@ -53,7 +53,7 @@ def update_run(run_id: str, updates: dict[str, Any]) -> None:
             changed = True
             break
     if changed:
-        write_runs(entries)
+        _write_runs(entries)
 
 
 def runs_path() -> Path:

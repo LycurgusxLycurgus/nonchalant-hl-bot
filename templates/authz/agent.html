@@ -80,6 +80,7 @@
       hx-post="/authz/agent"
       hx-target="#agent-form-status"
       hx-swap="innerHTML"
+      hx-headers='{"X-Requested-With": "HTMX"}'
     >
       <div class="agent-form__grid">
         <label class="ui-field">
@@ -117,4 +118,14 @@
       </div>
     </aside>
   </section>
+
+  <div
+    id="agent-vault"
+    hx-get="/authz/agent/list"
+    hx-trigger="load, agent:refresh from:body"
+    hx-target="#agent-vault"
+    hx-swap="innerHTML"
+  >
+    {% include "authz/_agent_list.html" with context %}
+  </div>
 {% endblock %}

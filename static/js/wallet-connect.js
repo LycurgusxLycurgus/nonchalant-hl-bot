@@ -15,6 +15,11 @@ const walletModule = (() => {
   let walletAddress;
   let saving = false;
 
+  const dispatchState = (state) => {
+    const detail = { state, address: walletAddress };
+    document.dispatchEvent(new CustomEvent('wallet:state', { detail }));
+  };
+
   const api = {
     async init() {
       if (!window.ethers) {
@@ -44,12 +49,15 @@ const walletModule = (() => {
           walletAddress = body.data.address;
           api.renderConnectedState();
           button.dataset.connectedAddress = walletAddress;
+          dispatchState('connected');
         } else {
           api.renderDisconnectedState();
+          dispatchState('disconnected');
         }
       } catch (error) {
         console.warn('Unable to hydrate wallet session', error);
         api.renderDisconnectedState();
+        dispatchState('disconnected');
       }
     },
 
@@ -79,9 +87,11 @@ const walletModule = (() => {
 
         await api.persistWallet(walletAddress);
         api.renderConnectedState();
+        dispatchState('connected');
       } catch (error) {
         console.error('Wallet connect failed', error);
         api.renderDisconnectedState('Connect wallet');
+        dispatchState('disconnected');
       }
     },
 
@@ -92,6 +102,7 @@ const walletModule = (() => {
       signer = undefined;
       await api.clearWallet();
       api.renderDisconnectedState();
+      dispatchState('disconnected');
     },
 
     async handleAccountsChanged(accounts) {
@@ -103,6 +114,7 @@ const walletModule = (() => {
       walletAddress = accounts[0];
       await api.persistWallet(walletAddress);
       api.renderConnectedState();
+      dispatchState('connected');
     },
 
     async persistWallet(address) {

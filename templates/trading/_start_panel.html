@@ -1,0 +1,196 @@
+<article class="start-panel ui-card ui-card--surface" id="start-panel" data-start-panel>
+  <header class="start-panel__header">
+    <div>
+      <span class="ui-card__kicker">Start bot</span>
+      <h2 class="ui-card__title">Configure your run</h2>
+    </div>
+    <div class="start-panel__status" data-wallet-required {% if wallet_address %}hidden{% endif %}>
+      <span class="start-panel__status-icon" aria-hidden="true">⚠️</span>
+      <span class="start-panel__status-text">Connect your Hyperliquid wallet to launch a run.</span>
+    </div>
+  </header>
+
+  {% if form_success %}
+    <div class="start-panel__flash start-panel__flash--success" role="status">{{ form_success }}</div>
+  {% endif %}
+  {% if form_errors.get('__all__') %}
+    <div class="start-panel__flash start-panel__flash--error" role="alert">{{ form_errors['__all__'] }}</div>
+  {% endif %}
+  {% if form_errors.get('wallet') %}
+    <div class="start-panel__flash start-panel__flash--error" role="alert">{{ form_errors['wallet'] }}</div>
+  {% endif %}
+
+  <form
+    method="post"
+    class="start-panel__form"
+    data-start-form
+    hx-post="/bot/start"
+    hx-target="#start-panel"
+    hx-swap="outerHTML"
+    hx-indicator="#start-panel-indicator"
+    hx-headers='{"X-Requested-With": "HTMX"}'
+  >
+    <div class="start-panel__grid">
+      <div class="ui-field">
+        <label class="ui-field__label" for="market">Market</label>
+        <select
+          id="market"
+          name="market"
+          class="start-panel__input{% if form_errors.get('market') %} is-error{% endif %}"
+          required
+        >
+          {% for market in markets %}
+            <option value="{{ market }}"{% if form_values.market == market %} selected{% endif %}>{{ market }}</option>
+          {% endfor %}
+        </select>
+        {% if form_errors.get('market') %}
+          <p class="ui-field__error" id="market-error">{{ form_errors['market'] }}</p>
+        {% endif %}
+      </div>
+
+      <div class="ui-field">
+        <label class="ui-field__label" for="usd_notional">USDC notional</label>
+        <input
+          id="usd_notional"
+          name="usd_notional"
+          type="number"
+          min="10"
+          step="0.01"
+          inputmode="decimal"
+          class="start-panel__input{% if form_errors.get('usd_notional') %} is-error{% endif %}"
+          value="{{ form_values.usd_notional }}"
+          required
+        />
+        <p class="ui-field__hint">Sized in United States Dollar Coin (USDC).</p>
+        {% if form_errors.get('usd_notional') %}
+          <p class="ui-field__error" id="usd-error">{{ form_errors['usd_notional'] }}</p>
+        {% endif %}
+      </div>
+
+      <div class="ui-field">
+        <label class="ui-field__label" for="leverage">Leverage</label>
+        <input
+          id="leverage"
+          name="leverage"
+          type="number"
+          min="1"
+          max="50"
+          step="1"
+          inputmode="numeric"
+          class="start-panel__input{% if form_errors.get('leverage') %} is-error{% endif %}"
+          value="{{ form_values.leverage }}"
+          required
+        />
+        <p class="ui-field__hint">Max 50× isolated leverage supported.</p>
+        {% if form_errors.get('leverage') %}
+          <p class="ui-field__error" id="lev-error">{{ form_errors['leverage'] }}</p>
+        {% endif %}
+      </div>
+
+      <div class="ui-field">
+        <label class="ui-field__label" for="duration_minutes">Run duration (minutes)</label>
+        <input
+          id="duration_minutes"
+          name="duration_minutes"
+          type="number"
+          min="0.1"
+          step="0.1"
+          inputmode="decimal"
+          class="start-panel__input{% if form_errors.get('duration_minutes') %} is-error{% endif %}"
+          value="{{ form_values.duration_minutes }}"
+          required
+        />
+        <p class="ui-field__hint">Fractional minutes allowed (e.g., 1 for 60 seconds).</p>
+        {% if form_errors.get('duration_minutes') %}
+          <p class="ui-field__error" id="duration-error">{{ form_errors['duration_minutes'] }}</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="start-panel__actions">
+      <button type="submit" class="ui-button ui-button--primary" data-start-submit>
+        Start bot run
+      </button>
+      <div id="start-panel-indicator" class="start-panel__indicator" aria-hidden="true">Launching…</div>
+    </div>
+  </form>
+
+  <section class="start-panel__stop" aria-labelledby="active-runs-heading">
+    <header class="start-panel__stop-header">
+      <h3 id="active-runs-heading">Active runs</h3>
+      <p class="start-panel__stop-subhead">Select a live run to close the position gracefully.</p>
+    </header>
+
+    {% set ns = namespace(items=[]) %}
+    {% for run in start_overview.recent_runs %}
+      {% if run.status in ['running', 'starting'] %}
+        {% set _ = ns.items.append(run) %}
+      {% endif %}
+    {% endfor %}
+    {% set active_runs = ns.items %}
+
+    <form
+      method="post"
+      class="start-panel__stop-form"
+      hx-post="/bot/stop"
+      hx-target="#start-panel"
+      hx-swap="outerHTML"
+      hx-indicator="#stop-panel-indicator"
+      hx-headers='{"X-Requested-With": "HTMX"}'
+    >
+      {% if form_errors.get('run_id') %}
+        <div class="start-panel__flash start-panel__flash--error" role="alert">{{ form_errors['run_id'] }}</div>
+      {% endif %}
+      {% if form_errors.get('__all__') %}
+        <div class="start-panel__flash start-panel__flash--error" role="alert">{{ form_errors['__all__'] }}</div>
+      {% endif %}
+
+      {% if active_runs %}
+        <div class="start-panel__stop-options" role="radiogroup" aria-label="Running bot runs">
+          {% for run in active_runs %}
+            {% set is_selected = stop_target_run_id == run.run_id %}
+            <label class="start-panel__stop-option{% if is_selected %} is-selected{% endif %}">
+              <input
+                type="radio"
+                name="run_id"
+                value="{{ run.run_id }}"
+                {% if is_selected %}checked{% endif %}
+              />
+              <span class="start-panel__stop-market">{{ run.market }}</span>
+              <span class="start-panel__stop-id" title="{{ run.run_id }}">{{ run.run_id_short }}</span>
+              <span class="start-panel__stop-meta">Notional {{ run.usd_notional }} · {{ run.leverage }}×</span>
+              <span class="start-panel__stop-status">{{ run.status|capitalize }}</span>
+            </label>
+          {% endfor %}
+        </div>
+        <div class="start-panel__stop-actions">
+          <button type="submit" class="ui-button ui-button--secondary" data-stop-submit>Stop selected run</button>
+          <div id="stop-panel-indicator" class="start-panel__indicator" aria-hidden="true">Stopping…</div>
+        </div>
+      {% else %}
+        <p class="start-panel__stop-empty">No active runs at the moment. Start a new run to manage it here.</p>
+      {% endif %}
+    </form>
+  </section>
+
+  <section class="start-panel__recent" aria-labelledby="recent-runs-heading">
+    <header class="start-panel__recent-header">
+      <h3 id="recent-runs-heading">Recent runs</h3>
+      <a class="start-panel__recent-link" href="/monitoring/">View monitor</a>
+    </header>
+    {% if start_overview.recent_runs %}
+      <ul class="start-panel__recent-list">
+        {% for run in start_overview.recent_runs %}
+          <li>
+            <span class="start-panel__recent-market">{{ run.market }}</span>
+            <span class="start-panel__recent-meta">{{ run.run_id_short }}</span>
+            <span class="start-panel__recent-status start-panel__recent-status--{{ run.status|replace(' ', '-') }}">{{ run.status|capitalize }}</span>
+            <span class="start-panel__recent-time">{{ run.started_at_display or '—' }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="start-panel__recent-empty">No bot runs yet. Launch your first trade to populate history.</p>
+    {% endif %}
+  </section>
+</article>

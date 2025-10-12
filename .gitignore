@@ -1,4 +1,5 @@
-.windsurf/
-.env
-storage/
-project_canon.v1.yaml
+.windsurf/ 
+.env 
+storage/ 
+project_canon.v1.yaml 
+storage-back/ 
