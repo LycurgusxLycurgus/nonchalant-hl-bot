@@ -1,0 +1,181 @@
+meta:
+  name: hyperliquid-bot-app
+  canon_version: 1.0.0
+  owners:
+    - role: tech_lead
+      contact: "@you"
+  environments:
+    - name: dev
+      base_urls:
+        rest: "https://api.hyperliquid-testnet.xyz"
+        ws:   "wss://api.hyperliquid-testnet.xyz/ws"
+    - name: prod
+      base_urls:
+        rest: "https://api.hyperliquid.xyz"
+        ws:   "wss://api.hyperliquid.xyz/ws"
+
+decisions:
+  system_architecture: "FastAPI monolith, server-rendered HTML, htmx"
+  interface_type: "GUI (web), JSON-over-HTTP APIs for UI"
+  design_system: "Your tokens via CSS variables; vanilla CSS"
+  design_style: "Data-dense, compact, dark, WCAG AA"
+  ux_flows:
+    - connect_wallet
+    - authorize_agent
+    - deposit_bridge
+    - configure_bot
+    - start_bot
+    - monitor_realtime
+    - stop_close
+    - compute_pnl
+    - internal_transfer_optional
+    - withdraw_user_signed
+    - audit_history
+  tech_stack:
+    backend: ["python3.11", "fastapi>=0.114", "uvicorn>=0.30", "pydantic>=2", "httpx>=0.27", "websockets>=12", "sqlalchemy>=2.0", "alembic>=1.13", "hyperliquid-python-sdk>=0.19.0"]
+    frontend: ["jinja2>=3.1", "htmx>=2", "ethers>=6", "web3modal>=3"]
+    data: ["postgres>=14"]
+  repo_layout: "vertical slices by feature; thin /lib adapters"
+  deployment: "Render: web svc + (optional) worker; Postgres; Secrets"
+
+flows:
+  connect_wallet:
+    description: "Browser connects MetaMask/WalletConnect; store public address only"
+    signer: "user_wallet"
+  authorize_agent:
+    description: "User approves API (agent) wallet; backend stores agent private key in KMS/secrets"
+    signer: "user_wallet"
+    notes: "API wallets act on behalf of account but have no withdrawal permissions"
+    refs: ["app.hyperliquid.xyz/API"]
+  deposit_bridge:
+    description: "User signs on-chain deposit via HL bridge/withdrawal flow"
+    signer: "user_wallet"
+    notes:
+      - "Balance polling must fetch both spotClearinghouseState and clearinghouseState; treat crossMarginSummary.equity as the primary USDC collateral amount with fallbacks to related fields."
+  configure_bot:
+    inputs: ["market", "usd_amount", "leverage", "duration_min"]
+  start_bot:
+    action: "backend places orders via Exchange endpoint using agent wallet"
+    signer: "agent_wallet"
+  monitor_realtime:
+    action: "WS subscriptions: orders/fills/positions/funding; Info for recovery"
+  stop_close:
+    action: "close position; cancel remaining orders"
+    signer: "agent_wallet"
+  compute_pnl:
+    action: "calc realized/unrealized PnL via fills + positions"
+  internal_transfer_optional:
+    action: "usdSend/spotSend to move funds between internal wallets"
+    signer: "agent_wallet"
+  withdraw_user_signed:
+    action: "prepare withdrawal; user signs (no agent withdrawal)"
+    signer: "user_wallet"
+  audit_history:
+    action: "show fills, PnL, transfers; store signed payload logs"
+
+contracts:
+  error_envelope:
+    ok: false
+    code: "string"
+    message: "string"
+    details?: {}
+  success_envelope:
+    ok: true
+    data: {}
+
+  http:
+    POST /api/bot/start:
+      request:
+        market: "BTC-PERP | ETH-PERP | etc"
+        usd: "number"
+        leverage: "number"
+        durationMin: "integer"
+      response: { "$ref": "#/contracts/success_envelope", data: { runId: "string" } }
+    POST /api/bot/stop:
+      request: { runId: "string" }
+      response: { "$ref": "#/contracts/success_envelope" }
+    GET /api/bot/{runId}/status:
+      response:
+        ok: true
+        data:
+          pnl: "number"
+          position: { side: "long|short|null", size: "number", entryPx: "number|null" }
+          ordersOpen: "integer"
+    POST /api/internal/transfer:
+      request: { kind: "usdSend|spotSend", amount: "number", to: "string" }
+      response: { "$ref": "#/contracts/success_envelope" }
+    POST /api/withdraw/prepare:
+      request: { amount: "number", chain: "arbitrum" }
+      response: { ok: true, data: { typedData: {}, instructions: "string" } }
+    POST /authz/agent:
+      content_type: "application/x-www-form-urlencoded"
+      response: "HTML partial (status banner); status 200 for htmx swap"
+
+schemas:
+  models:
+    BotRun:
+      runId: "uuid"
+      userAddr: "hex"
+      agentAddr: "hex"
+      market: "string"
+      usd: "number"
+      leverage: "number"
+      status: "created|running|stopped|closed|error"
+      startedAt: "datetime"
+      endsAt: "datetime"
+    SignedActionLog:
+      id: "uuid"
+      runId: "uuid"
+      action: "string"
+      payload: "json"
+      signature: "hex"
+      ts: "datetime"
+
+adapters:
+  hyperliquid_sdk:
+    library: "hyperliquid-python-sdk"
+    rest_bases:
+      mainnet: "https://api.hyperliquid.xyz"
+      testnet: "https://api.hyperliquid-testnet.xyz"
+    ws:
+      mainnet: "wss://api.hyperliquid.xyz/ws"
+      testnet: "wss://api.hyperliquid-testnet.xyz/ws"
+    notes:
+      - "Use Info for balances/positions/fills; observe pagination by time windows"
+      - "Use Exchange for orders, leverage, usdSend/spotSend, initiating withdrawal"
+      - "Nonces are per-signer and time-bounded; prefer one agent per bot"
+  db:
+    engine: "postgres"
+    migration_tool: "alembic"
+  kms:
+    storage: "Render Secrets (or cloud KMS)"
+    rule: "No agent private key in browser; rotate per-bot"
+
+observability:
+  logs: ["feature-scoped", "structured JSON", "request-correlation"]
+  metrics: ["latency", "error_rate", "fills_per_minute", "pnl_per_run"]
+  health: ["liveness", "readiness"]
+
+env:
+  required:
+    - HL_ENV                # dev|prod
+    - HL_REST_BASE          # from environments.base_urls.rest
+    - HL_WS_URL             # from environments.base_urls.ws
+    - DATABASE_URL          # postgres
+    - SECRET_KEY_SALT       # server session/CSRF
+  per_run_secrets:
+    - AGENT_PRIVATE_KEY     # per running bot; in Render secret
+
+runbook:
+  install: "pip install -r requirements.txt"
+  dev: "uvicorn main:app --reload --port 8000"
+  test: "pytest -q"
+  build: "docker build -t app ."
+  start: "uvicorn main:app --host 0.0.0.0 --port $PORT"
+
+acceptance_criteria:
+  - "Feature slices co-locate handler+schema+tests."
+  - "All HTTP boundaries validate input/output; standard error envelope."
+  - "Agent wallets never perform L1 withdrawals; user signs."
+  - "Nonces handled per agent; no collisions in concurrent runs."
+  - "README run steps ≤ 3 lines; e2e happy path for start/close bot."
