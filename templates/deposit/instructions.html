@@ -1,15 +1,15 @@
 {% extends "layouts/base.html" %}
 
-{% block title %}Deposit funds — Hyperliquid Bot{% endblock %}
+{% block title %}Deposit funds — Nonchalant Bot{% endblock %}
 
 {% block content %}
   <section class="deposit-hero ui-card ui-card--surface">
     <div class="deposit-hero__body">
-      <span class="deposit-hero__eyebrow">Phase 3 · Fund your account</span>
-      <h1 class="deposit-hero__title">Bridge assets into Hyperliquid</h1>
+      <span class="deposit-hero__eyebrow">Deposit · Bridge funds</span>
+      <h1 class="deposit-hero__title">Move USDC to Hyperliquid in four guided steps</h1>
       <p class="deposit-hero__copy">
-        Deposits are signed by your main wallet on Layer 1. Once confirmed, balances appear on Hyperliquid
-        and the bot can trade using your authorized agent wallet. Follow the guided steps below to bridge funds safely.
+        Use your primary L1 wallet to bridge into Hyperliquid. Once the transfer settles, Nonchalant Bot can
+        execute instantly with your agent wallet while every move stays tracked and auditable.
       </p>
       <div class="deposit-hero__ctas">
         <a class="ui-button ui-button--primary" href="https://app.hyperliquid.xyz/bridge" target="_blank" rel="noopener">
@@ -29,28 +29,29 @@
   <section class="deposit-layout">
     <article class="ui-card ui-card--surface deposit-steps" aria-labelledby="deposit-steps-heading">
       <header class="ui-card__header">
-        <span class="ui-card__kicker">Checklist</span>
-        <h2 id="deposit-steps-heading" class="ui-card__title">Bridge flow</h2>
+        <div class="ui-card__header-left">
+          <h2 id="deposit-steps-heading" class="ui-card__title">Bridge flow</h2>
+        </div>
+        <span class="ui-card__header-right">Checklist</span>
       </header>
       <ol class="deposit-steps__list">
         <li>
-          <strong>Prepare wallet</strong> — Connect your L1 wallet (MetaMask, WalletConnect) using the top toolbar. Ensure you have USDC on Arbitrum.
+          <strong>Prepare wallet</strong> — Connect your L1 wallet (MetaMask or WalletConnect) and confirm you hold USDC on Arbitrum.
         </li>
         <li>
-          <strong>Initiate deposit</strong> — Visit the Hyperliquid Bridge, choose <em>Arbitrum → Hyperliquid</em>, specify the amount, and submit the transaction.
+          <strong>Initiate deposit</strong> — Open the Hyperliquid Bridge, choose <em>Arbitrum → Hyperliquid</em>, enter the USDC amount, and submit.
         </li>
         <li>
-          <strong>Wait for confirmation</strong> — Bridge finalization typically takes a couple of minutes. Keep the window open until you see a success status.
+          <strong>Wait for confirmation</strong> — Keep the bridge tab open until it reports success. Most transfers clear within a few minutes.
         </li>
         <li>
-          <strong>Refresh balance</strong> — Return here and refresh the balance panel. Your USDC credit should appear once the bridge settles.
+          <strong>Refresh balance</strong> — Return here and refresh the balance panel. Your USDC should appear once the bridge settles.
         </li>
       </ol>
       <div class="deposit-alert">
         <span class="deposit-alert__icon" aria-hidden="true">⚠️</span>
         <p class="deposit-alert__copy">
-          Reminder: Agent wallets can trade and perform internal transfers but cannot withdraw on-chain. All L1 withdrawals
-          must be initiated by your primary wallet.
+          Agent wallets trade and move funds internally but cannot withdraw on-chain. Use your primary wallet for any bridge back to L1.
         </p>
       </div>
     </article>

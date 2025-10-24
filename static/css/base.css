@@ -14,6 +14,21 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+body.is-nav-open {
+  overflow: hidden;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
 *,
 *::before,
 *::after {
@@ -34,6 +49,13 @@ body {
   background: radial-gradient(circle at top right, rgba(255, 122, 26, 0.18), transparent 55%);
 }
 
+.app-shell__header,
+.app-shell__main,
+.app-shell__footer {
+  width: min(100%, var(--layout-max-width));
+  margin: 0 auto;
+}
+
 @media (max-width: 768px) {
   .app-shell {
     padding: var(--space-4);
@@ -45,18 +67,29 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--space-4);
   background: var(--color-surface-2);
   border-radius: var(--radius-lg);
   padding: var(--space-3) var(--space-4);
   box-shadow: var(--shadow-e1);
 }
 
-.app-shell__header {
-  position: sticky;
-  top: var(--space-4);
-  z-index: 10;
-  backdrop-filter: blur(18px);
-  background: rgba(23, 24, 27, 0.85);
+.app-shell__menu {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: rgba(29, 31, 36, 0.8);
+  color: var(--color-text-1);
+  cursor: pointer;
+}
+
+.app-shell__menu svg {
+  width: 22px;
+  height: 22px;
 }
 
 .app-shell__brand {
@@ -78,6 +111,14 @@ body {
   box-shadow: var(--shadow-e2);
 }
 
+.app-shell__header {
+  position: sticky;
+  top: var(--space-4);
+  z-index: 10;
+  backdrop-filter: blur(18px);
+  background: rgba(23, 24, 27, 0.85);
+}
+
 .app-shell__nav {
   display: inline-flex;
   gap: var(--space-3);
@@ -88,6 +129,55 @@ body {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+}
+
+.app-shell__drawer {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  background: rgba(12, 13, 16, 0.65);
+  padding: var(--space-6) var(--space-4);
+  z-index: 15;
+}
+
+.app-shell__drawer[hidden] {
+  display: none;
+}
+
+.app-shell__drawer-nav {
+  width: min(100%, 360px);
+  background: var(--color-surface-2);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-e3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.app-shell__drawer-nav .ui-link {
+  display: block;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: rgba(29, 31, 36, 0.6);
+}
+
+.app-shell__drawer-nav .ui-link.is-active {
+  background: rgba(255, 122, 26, 0.16);
+  color: var(--color-text-1);
+}
+
+.drawer-close {
+  align-self: flex-end;
+  border: none;
+  background: transparent;
+  color: var(--color-text-2);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
 }
 
 .app-shell__nav .ui-link {
@@ -111,13 +201,19 @@ body {
   gap: var(--space-6);
 }
 
+.app-shell__main > * {
+  width: 100%;
+}
+
 .hero-card {
   background: linear-gradient(135deg, rgba(31, 34, 42, 0.92), rgba(18, 19, 22, 0.88));
   border-radius: var(--radius-xl);
   padding: var(--space-8);
   box-shadow: var(--shadow-e3);
   border: 1px solid rgba(255, 255, 255, 0.04);
-  max-width: 920px;
+  width: 100%;
+  max-width: var(--layout-hero-max-width);
+  margin: 0 auto;
 }
 
 .hero-card:focus-visible {
@@ -350,18 +446,37 @@ body {
   }
 }
 
-@media (max-width: 640px) {
-  .app-shell__header,
-  .app-shell__footer {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-2);
+@media (max-width: 1024px) {
+  .app-shell__menu {
+    display: inline-flex;
+  }
+
+  .app-shell__tools {
+    width: 100%;
+    justify-content: flex-end;
   }
 
   .app-shell__nav {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-shell__header,
+  .app-shell__footer {
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .app-shell__nav {
+    display: none;
+  }
+
+  .wallet-panel {
     width: 100%;
     justify-content: space-between;
-    flex-wrap: wrap;
   }
 
   .hero-card {
@@ -370,10 +485,5 @@ body {
 
   .hero-card__title {
     font-size: 1.75rem;
-  }
-
-  .wallet-panel {
-    width: 100%;
-    justify-content: space-between;
   }
 }

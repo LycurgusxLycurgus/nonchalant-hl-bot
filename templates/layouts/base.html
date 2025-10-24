@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{% block title %}{{ page_title or "Hyperliquid Bot" }}{% endblock %}</title>
+    <title>{% block title %}{{ page_title or "Nonchalant Bot" }}{% endblock %}</title>
     <link rel="preload" href="https://rsms.me/inter/inter.css" as="style" />
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     <link rel="stylesheet" href="{{ url_for('static', path='css/tokens.css') }}" />
@@ -14,12 +14,16 @@
   <body>
     <div class="app-shell">
       <header class="app-shell__header" role="banner">
+        <button class="app-shell__menu" type="button" aria-expanded="false" aria-controls="primary-drawer" data-nav-toggle>
+          <span class="sr-only">Toggle navigation</span>
+          <svg viewBox="0 0 24 24" role="img" aria-hidden="true"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z" fill="currentColor" /></svg>
+        </button>
         <div class="app-shell__brand">
           <span class="brand-logo" aria-hidden="true">⚡</span>
-          <span class="brand-text">Hyperliquid Bot</span>
+          <span class="brand-text">Nonchalant Bot</span>
         </div>
         <div class="app-shell__tools">
-          <nav class="app-shell__nav" aria-label="Primary">
+          <nav class="app-shell__nav" aria-label="Primary" data-nav-links>
             <a class="ui-link{% if nav_active == 'overview' %} is-active{% endif %}" href="/">Overview</a>
             <a class="ui-link{% if nav_active == 'deposit' %} is-active{% endif %}" href="/deposit">Deposit</a>
             <a class="ui-link{% if nav_active == 'agent' %} is-active{% endif %}" href="/authz/agent">Agent auth</a>
@@ -51,17 +55,32 @@
         </div>
       </header>
 
+      <div class="app-shell__drawer" id="primary-drawer" hidden>
+        <nav class="app-shell__drawer-nav" aria-label="Mobile primary">
+          <button class="drawer-close" type="button" data-nav-toggle>
+            <span class="sr-only">Close navigation</span>
+            ×
+          </button>
+          <a class="ui-link{% if nav_active == 'overview' %} is-active{% endif %}" href="/">Overview</a>
+          <a class="ui-link{% if nav_active == 'deposit' %} is-active{% endif %}" href="/deposit">Deposit</a>
+          <a class="ui-link{% if nav_active == 'agent' %} is-active{% endif %}" href="/authz/agent">Agent auth</a>
+          <a class="ui-link{% if nav_active == 'monitoring' %} is-active{% endif %}" href="/monitoring/">Monitor</a>
+          <a class="ui-link{% if nav_active == 'history' %} is-active{% endif %}" href="/history/">History</a>
+        </nav>
+      </div>
+
       <main class="app-shell__main" role="main">
         {% block content %}{% endblock %}
       </main>
 
       <footer class="app-shell__footer" role="contentinfo">
-        <span>© {{ current_year }} Hyperliquid Bot</span>
+        <span>© {{ current_year }} Nonchalant Bot</span>
       </footer>
     </div>
     <script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.15.0/ethers.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3modal@3.5.5/dist/index.umd.js" defer></script>
+    <script src="{{ url_for('static', path='js/nav.js') }}" defer></script>
     <script src="{{ url_for('static', path='js/wallet-connect.js') }}" defer></script>
     {% block body_assets %}{% endblock %}
   </body>

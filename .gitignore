@@ -4,5 +4,5 @@ storage/agents.json
 storage/runs.json
 storage/bot_runs.json
 storage/audit_log.jsonl
-project_canon.v1.yaml //fix
+project_canon.v1.yaml
 storage-back/ 

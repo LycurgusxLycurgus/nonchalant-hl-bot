@@ -122,10 +122,24 @@
 
 .info-grid__items .ui-card__header {
   display: flex;
-  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
-  column-gap: var(--space-2);
+  gap: var(--space-2);
+}
+
+.ui-card__header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ui-card__header-right {
+  margin-left: auto;
+  text-align: right;
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-accent-500);
 }
 
 .info-grid__items .ui-card__title {

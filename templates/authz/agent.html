@@ -1,16 +1,15 @@
 {% extends "layouts/base.html" %}
 
-{% block title %}Authorize agent wallet — Hyperliquid Bot{% endblock %}
+{% block title %}Authorize agent wallet — Nonchalant Bot{% endblock %}
 
 {% block content %}
   <section class="agent-hero ui-card ui-card--surface">
     <div class="agent-hero__body">
       <div class="agent-hero__eyebrow">Agent authorization</div>
-      <h1 class="agent-hero__title">Connect your Hyperliquid agent wallet</h1>
+      <h1 class="agent-hero__title">Delegate trading to a secure Hyperliquid agent</h1>
       <p class="agent-hero__copy">
-        Agents let the platform trade programmatically on Hyperliquid using your delegated API wallet.
-        Your main wallet keeps custody—agents cannot withdraw on L1. Follow the checklist to authorize an
-        agent and vault its credentials with server-side encryption.
+        Create an API wallet on Hyperliquid, keep custody of your funds, and let Nonchalant Bot execute the
+        plan for you. Every step is guided, encrypted, and tracked so you stay in control.
       </p>
       <div class="agent-hero__cta">
         <a class="ui-button ui-button--primary" href="{{ agent_deep_link }}" target="_blank" rel="noopener">
@@ -27,53 +26,61 @@
     </div>
   </section>
 
-  <section class="agent-steps info-grid" aria-labelledby="agent-steps-heading">
-    <h2 id="agent-steps-heading" class="section-title">3-step authorization checklist</h2>
-    <div class="info-grid__items info-grid__items--compact">
-      <article class="ui-card">
-        <header class="ui-card__header">
-          <h3 class="ui-card__title">Create agent wallet</h3>
-          <span class="ui-card__kicker">Step 1</span>
-        </header>
-        <p class="ui-card__body">
-          In Hyperliquid, open the <strong>API</strong> page and select <em>Create API wallet</em>.
-          Confirm with your primary wallet. Copy the generated <strong>agent address</strong> and <strong>private key</strong>.
-        </p>
-      </article>
-      <article class="ui-card">
-        <header class="ui-card__header">
-          <h3 class="ui-card__title">Authorize trading scope</h3>
-          <span class="ui-card__kicker">Step 2</span>
-        </header>
-        <p class="ui-card__body">
-          Review the capabilities you are granting. Agents can place orders and perform internal transfers but
-          <strong>cannot withdraw on L1</strong>. Confirm authorization in Hyperliquid’s UI.
-        </p>
-      </article>
-      <article class="ui-card">
-        <header class="ui-card__header">
-          <h3 class="ui-card__title">Register with the bot</h3>
-          <span class="ui-card__kicker">Step 3</span>
-        </header>
-        <p class="ui-card__body">
-          Paste the agent metadata below so this server can encrypt and store it. Signed audit logs keep track of every
-          agent registration event for compliance.
-        </p>
-      </article>
-    </div>
+  <section class="agent-steps" aria-labelledby="agent-steps-heading">
+    <article class="ui-card ui-card--surface agent-steps__card">
+      <header class="ui-card__header">
+        <div class="ui-card__header-left">
+          <h2 id="agent-steps-heading" class="ui-card__title">Authorize in three moves</h2>
+        </div>
+        <span class="ui-card__header-right">Checklist</span>
+      </header>
+      <ol class="agent-steps__list">
+        <li class="agent-step">
+          <div class="agent-step__header">
+            <span class="agent-step__title">Create agent wallet</span>
+            <span class="agent-step__meta">Step 1</span>
+          </div>
+          <p>
+            In Hyperliquid’s API portal choose <em>Create API wallet</em>. Approve with your primary wallet and save the
+            generated agent address and private key offline.
+          </p>
+        </li>
+        <li class="agent-step">
+          <div class="agent-step__header">
+            <span class="agent-step__title">Authorize trading scope</span>
+            <span class="agent-step__meta">Step 2</span>
+          </div>
+          <p>
+            Review the capabilities shown in Hyperliquid. Agents can place trades and move funds internally but never
+            withdraw on L1. Confirm once the scope matches your plan.
+          </p>
+        </li>
+        <li class="agent-step">
+          <div class="agent-step__header">
+            <span class="agent-step__title">Register in Nonchalant Bot</span>
+            <span class="agent-step__meta">Step 3</span>
+          </div>
+          <p>
+            Return here and submit the agent details. We encrypt credentials immediately and log a signed audit event for
+            every registration.
+          </p>
+        </li>
+      </ol>
+    </article>
   </section>
 
   <section class="agent-form-card ui-card ui-card--surface" aria-labelledby="agent-form-heading">
     <header class="ui-card__header">
-      <div>
+      <div class="ui-card__header-left">
         <span class="ui-card__kicker">Secure storage</span>
         <h2 id="agent-form-heading" class="ui-card__title">Register agent credentials</h2>
       </div>
-      <p class="ui-card__body">
-        Provide a memorable label, agent wallet address, and the private key generated by Hyperliquid.
-        Credentials are encrypted immediately and never displayed after submission.
-      </p>
+      <span class="ui-card__header-right">Encrypted at rest</span>
     </header>
+    <p class="agent-form-card__lead">
+      Provide a label, agent wallet address, and the private key generated by Hyperliquid. We encrypt the payload instantly
+      and never surface the key again.
+    </p>
 
     <form
       class="agent-form"
@@ -91,12 +98,12 @@
         <label class="ui-field">
           <span class="ui-field__label">Agent address</span>
           <input name="agent_address" type="text" placeholder="0x..." required pattern="0x[a-fA-F0-9]{40}" />
-          <small class="ui-field__hint">Paste the 0x-prefixed agent wallet address.</small>
+          <small class="ui-field__hint">Paste the 0x-prefixed agent wallet address issued by Hyperliquid.</small>
         </label>
         <label class="ui-field ui-field--full">
           <span class="ui-field__label">Private key</span>
           <input name="private_key" type="password" placeholder="0x..." required pattern="0x[a-fA-F0-9]{64}" />
-          <small class="ui-field__hint">Stored encrypted. Key is never returned or shown again.</small>
+          <small class="ui-field__hint">Stored encrypted. The key is never shown again after submission.</small>
         </label>
       </div>
       <div class="agent-form__actions">
@@ -111,9 +118,9 @@
       <div class="agent-alert__body">
         <h3 class="agent-alert__title">Security notes</h3>
         <ul class="agent-alert__list">
-          <li>Only use API wallets created on Hyperliquid; never paste your primary wallet key.</li>
-          <li>Agent keys are encrypted at rest with server-managed secrets and can be rotated at any time.</li>
-          <li>Prefer rotating agents between bot runs to avoid nonce collisions and keep audit trails clean.</li>
+          <li>Only use API wallets created on Hyperliquid—never paste a primary wallet key.</li>
+          <li>Agent keys stay encrypted at rest with server-managed secrets and can be rotated any time.</li>
+          <li>Rotate agents between runs to avoid nonce collisions and keep audit trails tight.</li>
         </ul>
       </div>
     </aside>
